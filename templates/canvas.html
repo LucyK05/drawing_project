@@ -1,0 +1,114 @@
+<!-- templates/canvas.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Draw on the Canvas</h1>
+    <div class="mb-3">
+        <label class="form-label">Colors:</label><br>
+        <button class="btn" style="background-color: black; color: white;" onclick="setColor('black')">Black</button>
+        <button class="btn btn-danger" onclick="setColor('red')">Red</button>
+        <button class="btn" style="background-color: orange; color: black;" onclick="setColor('orange')">Orange</button>
+        <button class="btn btn-warning" onclick="setColor('yellow')">Yellow</button>
+        <button class="btn btn-success" onclick="setColor('green')">Green</button>
+        <button class="btn" style="background-color: #0d6efd; color: white;" onclick="setColor('blue')">Blue</button>
+        <button class="btn" style="background-color: purple; color: white;" onclick="setColor('purple')">Purple</button>
+        <button class="btn" style="background-color: deeppink; color: white;" onclick="setColor('deeppink')">Pink</button>
+    </div>
+    <div class="mb-3">
+        <label>Thickness:</label>
+        <button class="btn btn-secondary" onclick="setThickness(1)">1px</button>
+        <button class="btn btn-secondary" onclick="setThickness(5)">5px</button>
+        <button class="btn btn-secondary" onclick="setThickness(10)">10px</button>
+        <button class="btn btn-secondary" onclick="setThickness(20)">20px</button>
+    </div>
+    <canvas id="drawingCanvas" width="800" height="600" style="border: 1px solid black; background-color: white;"></canvas>
+    <div class="mt-3">
+        <button class="btn btn-primary" onclick="saveDrawing()">Save Drawing</button>
+        <button class="btn btn-secondary" onclick="clearCanvas()">Clear Canvas</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('drawingCanvas');
+        const ctx = canvas.getContext('2d');
+        let drawing = false;
+        let currentColor = 'black';
+        let currentThickness = 5;
+        let strokes = [];
+        let currentStroke = [];
+
+        function setColor(color) {
+            currentColor = color;
+        }
+
+        function setThickness(thick) {
+            currentThickness = thick;
+        }
+
+        function getMousePosition(e) {
+            const rect = canvas.getBoundingClientRect();
+            return {
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top
+            };
+        }
+
+        canvas.addEventListener('mousedown', (e) => {
+            drawing = true;
+            currentStroke = [];
+            const point = getMousePosition(e);
+            currentStroke.push(point);
+            ctx.beginPath();
+            ctx.moveTo(point.x, point.y);
+            ctx.strokeStyle = currentColor;
+            ctx.lineWidth = currentThickness;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (drawing) {
+                const point = getMousePosition(e);
+                currentStroke.push(point);
+                ctx.lineTo(point.x, point.y);
+                ctx.stroke();
+            }
+        });
+
+        canvas.addEventListener('mouseup', (e) => {
+            drawing = false;
+            if (currentStroke.length > 0) {
+                strokes.push({
+                    color: currentColor,
+                    thickness: currentThickness,
+                    points: currentStroke
+                });
+            }
+        });
+
+        canvas.addEventListener('mouseleave', () => {
+            drawing = false;
+        });
+
+        function saveDrawing() {
+            if (strokes.length === 0) {
+                alert('Nothing to save!');
+                return;
+            }
+            fetch('/save_drawing', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(strokes)
+            }).then(res => res.json()).then(data => {
+                if (data.status === 'ok') {
+                    alert('Drawing saved!');
+                    clearCanvas();
+                }
+            });
+        }
+
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            strokes = [];
+        }
+    </script>
+{% endblock %}
