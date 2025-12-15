@@ -2,6 +2,18 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h1>Welcome to the Drawing App!</h1>
-    <p>Use the navigation above to start drawing on the canvas or view saved drawings in the gallery.</p>
+    <div class="text-center py-5">
+        <h1 class="display-3 fw-bold mb-4" style="color: #ff6b6b; text-shadow: 2px 2px 4px rgba(0,0,0,0.1);">
+            🎨 Welcome to the Drawing App! 🖌️
+        </h1>
+        
+        <p class="lead fs-4 mb-5" style="color: #4ecdc4;">
+            Unleash your creativity! Draw freely, pick vibrant colors, adjust brush sizes, save your artwork, and manage your gallery.
+        </p>
+        
+        <div class="mb-5">
+            <a href="/canvas" class="btn btn-primary btn-lg me-3">🚀 Start Drawing</a>
+            <a href="/gallery" class="btn btn-success btn-lg">🖼️ View Gallery</a>
+        </div>
+    </div>
 {% endblock %}
